@@ -4,16 +4,13 @@ Colab-ready **HGNN** pipeline for enterprise WAF (Splunk export) request embeddi
 
 ## Quick start (Google Colab)
 
-1. Upload WAF CSV splits to Google Drive:
-   - `/content/drive/MyDrive/waf/train.csv`
-   - `/content/drive/MyDrive/waf/val.csv`
-   - `/content/drive/MyDrive/waf/test.csv`
+1. Open [`notebooks/waf_HGNN_colab.ipynb`](notebooks/waf_HGNN_colab.ipynb) in Colab (**File → Upload notebook** or open from this repo).
 
-2. Open [`notebooks/waf_HGNN_colab.ipynb`](notebooks/waf_HGNN_colab.ipynb) in Colab (**File → Upload notebook** or sync from this repo).
+2. Set runtime to **GPU** (Runtime → Change runtime type → T4 GPU or better).
 
-3. Set runtime to **GPU** (Runtime → Change runtime type → T4 GPU or better).
+3. Run all cells. When prompted, upload **`hgnn_waf_events.csv`** from your machine (Splunk WAF export). **Google Drive is not required.**
 
-4. Run all cells top-to-bottom.
+4. The notebook splits the CSV 70/15/15 into train/val/test, trains on **ALLOW** rows, and writes artifacts under `/content/waf_hgnn_artifacts/`.
 
 Production HGNN training and scoring use **ALLOW** rows only; **BLOCK** rows are evaluated separately in notebook section 8.
 
@@ -21,8 +18,8 @@ Production HGNN training and scoring use **ALLOW** rows only; **BLOCK** rows are
 
 | File | Purpose |
 |------|---------|
-| `notebooks/waf_HGNN_colab.ipynb` | End-to-end WAF HGNN: features, KNN graphs, training, embeddings, IP aggregation, blocklist stub |
-| `notebooks/modbus_HGNN_clean.ipynb` | Modbus HGNN: features, KNN graphs, training, embeddings, DBSCAN cluster evaluation |
+| `notebooks/waf_HGNN_colab.ipynb` | End-to-end WAF HGNN: upload CSV, features, KNN graphs, training, embeddings, IP aggregation, blocklist stub |
+| `notebooks/modbus_HGNN_clean.ipynb` | Modbus HGNN prototype: features, KNN graphs, training, embeddings, DBSCAN cluster evaluation |
 
 ### Modbus notebook (`modbus_HGNN_clean.ipynb`)
 
@@ -33,30 +30,33 @@ Production HGNN training and scoring use **ALLOW** rows only; **BLOCK** rows are
 
 ## Configuration
 
-Edit the `Config` dataclass in the notebook:
+Edit the `Config` dataclass in the WAF notebook:
 
 | Setting | Default | Notes |
 |---------|---------|-------|
-| `DATA_DIR` | `/content/drive/MyDrive/waf/` | Splunk export CSV location |
-| `ARTIFACT_DIR` | `/content/drive/MyDrive/waf_hgnn_artifacts/` | Models, embeddings, outputs |
+| `DATA_FILE` | `hgnn_waf_events.csv` | Uploaded to `/content/` when prompted |
+| `ARTIFACT_DIR` | `/content/waf_hgnn_artifacts/` | Models, embeddings, blocklist outputs |
+| `train_frac` / `val_frac` / `test_frac` | `0.70` / `0.15` / `0.15` | Split from single CSV |
 | `score_action` | `ALLOW` | Filter for HGNN training/scoring |
 | `REBUILD_KNN` | `True` | Set `False` after first run to load cached graphs |
 | `RUN_UMAP_DBSCAN` | `False` | Optional exploration in section 8 |
 
 Feature engineering includes `uri_path_length` / `uri_path_depth`, `ua_family` (not raw user-agent), and excludes `client_ip` from model features. IP aggregation and blocklist output are in sections 6–7.
 
-## Artifacts (Drive)
+## Artifacts
 
 Written under `ARTIFACT_DIR` by default, for example:
 
 - Cached KNN graphs per split (`*_edge_index.pt`)
 - `best_model.pt`, `embeddings.npy`, `training_history.json` (modbus notebook)
-- IP-level scores and blocklist outputs from sections 6–7
+- `ip_anomalies.csv`, `blocklist_candidates.json` (WAF notebook)
+
+Download artifacts from Colab (**Files** panel) before the runtime disconnects, or copy them elsewhere if you need persistence.
 
 ## Colab sync / next run
 
 - Pull or sync this repo in Colab so notebooks match `main`.
-- Re-upload [`notebooks/modbus_HGNN_clean.ipynb`](notebooks/modbus_HGNN_clean.ipynb) or [`notebooks/waf_HGNN_colab.ipynb`](notebooks/waf_HGNN_colab.ipynb) from the repo.
+- Re-upload [`notebooks/waf_HGNN_colab.ipynb`](notebooks/waf_HGNN_colab.ipynb) or [`notebooks/modbus_HGNN_clean.ipynb`](notebooks/modbus_HGNN_clean.ipynb) from the repo.
 - Delete stale `best_model.pt` in `ARTIFACT_DIR` before retraining.
 - During training, verify `val_link` stays positive (watch the validation logs).
 - Set `data_percentage=1.0` for full-dataset evaluation runs.
@@ -64,9 +64,10 @@ Written under `ARTIFACT_DIR` by default, for example:
 
 ## Troubleshooting
 
-- **Slow KNN:** First run builds graphs; set `REBUILD_KNN = False` on later runs.
+- **Upload prompt every run:** Place `hgnn_waf_events.csv` at `/content/hgnn_waf_events.csv` before section 1, or re-upload when prompted.
+- **Slow KNN:** First run builds graphs; set `REBUILD_KNN = False` on later runs in the same session.
 - **CPU warning:** Enable GPU runtime in Colab.
-- **CUDA OOM:** Reduce data subsampling in `Config` or use smaller batches if you extend training.
+- **CUDA OOM:** Reduce `data_percentage` in `Config` for smoke tests.
 
 ## License
 
