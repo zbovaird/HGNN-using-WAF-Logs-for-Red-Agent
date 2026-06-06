@@ -45,6 +45,15 @@ Written under `ARTIFACT_DIR` by default, for example:
 - `best_model.pt`, `embeddings.npy`
 - IP-level scores and blocklist outputs from sections 6–7
 
+## Colab sync / next run
+
+- Pull or sync this repo in Colab so notebooks match `main`.
+- Re-upload [`notebooks/modbus_HGNN_clean.ipynb`](notebooks/modbus_HGNN_clean.ipynb) or [`notebooks/waf_HGNN_colab.ipynb`](notebooks/waf_HGNN_colab.ipynb) from the repo.
+- Delete stale `best_model.pt` in `ARTIFACT_DIR` before retraining.
+- During training, verify `val_link` stays positive (watch the validation logs).
+- Set `data_percentage=1.0` for full-dataset evaluation runs.
+- If KNN/graph code changed, remove cached `*_edge_index.pt` or set `REBUILD_KNN = True` once.
+
 ## Troubleshooting
 
 - **Slow KNN:** First run builds graphs; set `REBUILD_KNN = False` on later runs.
