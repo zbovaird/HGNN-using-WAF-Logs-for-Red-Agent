@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+.env
+*.egg-info/
+dist/
+build/
+
+# Jupyter / Colab
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# HGNN / training artifacts (local; Colab uses Drive)
+hgnn_artifacts/
+waf_hgnn_artifacts/
+*.pt
+*.npy
+*.pkl
+*.pickle
+
+# Data (keep CSVs on Drive, not in repo)
+*.csv
+*.parquet
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Secrets
+.env.*
+credentials.json
+*_token*
