@@ -22,6 +22,14 @@ Production HGNN training and scoring use **ALLOW** rows only; **BLOCK** rows are
 | File | Purpose |
 |------|---------|
 | `notebooks/waf_HGNN_colab.ipynb` | End-to-end WAF HGNN: features, KNN graphs, training, embeddings, IP aggregation, blocklist stub |
+| `notebooks/modbus_HGNN_clean.ipynb` | Modbus HGNN: features, KNN graphs, training, embeddings, DBSCAN cluster evaluation |
+
+### Modbus notebook (`modbus_HGNN_clean.ipynb`)
+
+- Enable **GPU** in Colab (Runtime → Change runtime type → GPU) before running.
+- Set `REBUILD_KNN = True` once so KNN cache metadata (`.meta.json`) is written; then set `False` for fast reruns.
+- DBSCAN defaults are tuned from section 8b grid search: `dbscan_eps=0.4`, `dbscan_min_samples=3`.
+- Set `RUN_DBSCAN_SWEEP = True` only for offline DBSCAN tuning (section 8b grid search); leave `False` for normal runs.
 
 ## Configuration
 
@@ -42,7 +50,7 @@ Feature engineering includes `uri_path_length` / `uri_path_depth`, `ua_family` (
 Written under `ARTIFACT_DIR` by default, for example:
 
 - Cached KNN graphs per split (`*_edge_index.pt`)
-- `best_model.pt`, `embeddings.npy`
+- `best_model.pt`, `embeddings.npy`, `training_history.json` (modbus notebook)
 - IP-level scores and blocklist outputs from sections 6–7
 
 ## Colab sync / next run
