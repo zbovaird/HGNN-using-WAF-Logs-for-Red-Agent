@@ -2,6 +2,8 @@
 
 Colab-ready **HGNN** pipeline for enterprise WAF (Splunk export) request embeddings and **IP-level anomaly scoring** for red-team / detection workflows.
 
+**Strategy and methodology:** [docs/WAF_AI_AGENT_DETECTION_STRATEGY.md](docs/WAF_AI_AGENT_DETECTION_STRATEGY.md) — goals, data mix, Red Agent calibration, operational steps, and reasoning for security stakeholders.
+
 ## Quick start (Google Colab)
 
 1. Open [`notebooks/waf_HGNN_colab.ipynb`](notebooks/waf_HGNN_colab.ipynb) in Colab (**File → Upload notebook** or open from this repo).
@@ -18,15 +20,9 @@ Production HGNN training and scoring use **ALLOW** rows only; **BLOCK** rows are
 
 | File | Purpose |
 |------|---------|
-| `notebooks/waf_HGNN_colab.ipynb` | End-to-end WAF HGNN: upload CSV, features, KNN graphs, training, embeddings, IP aggregation, blocklist stub |
-| `notebooks/modbus_HGNN_clean.ipynb` | Modbus HGNN prototype: features, KNN graphs, training, embeddings, DBSCAN cluster evaluation |
+| `notebooks/waf_HGNN_colab.ipynb` | End-to-end WAF HGNN: upload Splunk CSV, features, KNN graphs, training, embeddings, IP aggregation, blocklist stub |
 
-### Modbus notebook (`modbus_HGNN_clean.ipynb`)
-
-- Enable **GPU** in Colab (Runtime → Change runtime type → GPU) before running.
-- Set `REBUILD_KNN = True` once so KNN cache metadata (`.meta.json`) is written; then set `False` for fast reruns.
-- DBSCAN defaults are tuned from section 8b grid search: `dbscan_eps=0.4`, `dbscan_min_samples=3`.
-- Set `RUN_DBSCAN_SWEEP = True` only for offline DBSCAN tuning (section 8b grid search); leave `False` for normal runs.
+**Tips:** Enable **GPU** in Colab before running. Set `REBUILD_KNN = True` once to build and cache graphs, then `False` for faster reruns in the same session. During training, confirm validation **link loss** stays positive.
 
 ## Configuration
 
@@ -48,15 +44,15 @@ Feature engineering includes `uri_path_length` / `uri_path_depth`, `ua_family` (
 Written under `ARTIFACT_DIR` by default, for example:
 
 - Cached KNN graphs per split (`*_edge_index.pt`)
-- `best_model.pt`, `embeddings.npy`, `training_history.json` (modbus notebook)
-- `ip_anomalies.csv`, `blocklist_candidates.json` (WAF notebook)
+- `best_model.pt`, `embeddings.npy`
+- `ip_anomalies.csv`, `blocklist_candidates.json`
 
 Download artifacts from Colab (**Files** panel) before the runtime disconnects, or copy them elsewhere if you need persistence.
 
 ## Colab sync / next run
 
 - Pull or sync this repo in Colab so notebooks match `main`.
-- Re-upload [`notebooks/waf_HGNN_colab.ipynb`](notebooks/waf_HGNN_colab.ipynb) or [`notebooks/modbus_HGNN_clean.ipynb`](notebooks/modbus_HGNN_clean.ipynb) from the repo.
+- Re-upload [`notebooks/waf_HGNN_colab.ipynb`](notebooks/waf_HGNN_colab.ipynb) from the repo.
 - Delete stale `best_model.pt` in `ARTIFACT_DIR` before retraining.
 - During training, verify `val_link` stays positive (watch the validation logs).
 - Set `data_percentage=1.0` for full-dataset evaluation runs.
